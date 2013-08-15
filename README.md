@@ -1,6 +1,6 @@
 # phytomap
 
-A Clojure library designed to ... well, that part is up to you.
+A ClojureScript app designed display statistical data from the freifunk (kbu) mesh node network.
 
 ## Usage
 
