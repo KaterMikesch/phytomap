@@ -1,46 +1,33 @@
 (ns phytomap.test
   (:require [goog.net.XhrIo :as gxhrio]))
 
+(defn log [& more]
+  (.log js/console (apply str more)))
+
 (def *raw-nodes* nil)
 (def *stats* nil)
 (def *nodes-by-mac* nil)
 
-
-(defn log [& more]
-  (.log js/console (apply str more)))
-
-(defn make-node-map-entry [map key value]
-  ;(log "appending value for key " key " to map of size " (count map))  
-  (assoc map key value)
-  )
-
 (defn make-nodes-map [raw-nodes-list]
-  (log (count raw-nodes-list))
-  (reduce #(make-node-map-entry %1 ((%2 "node") "mac") %2) {} *raw-nodes*)
-  )
+  (reduce #(assoc %1 (get-in %2 ["node" "mac"]) %2) {} raw-nodes-list))
 
 (defn node-ping-stats [node]
-  (let [rtt-5-min (get-in node ["stats" "rtt_5_min"] 100000.0)]
-    (log "\n" rtt-5-min)
-    (if (nil? rtt-5-min)
-      100000.0
-      rtt-5-min)))  
+  (if-let [rtt-5-min (get-in node ["stats" "rtt_5_min"])]
+    rtt-5-min
+    100000.0))
 
 (defn enriched-stats [stats, nodes-map]
   ""
-  (reduce #(conj %1 
-                 (let [stats (second %2)
-                       mac (stats "id_hex")
-                       node (if (nil? (nodes-map mac)) {} (nodes-map mac))]
-                   ;(log "processing " mac " -> " (assoc (assoc node "mac" mac) "stats" stats) "\n")
-                   (assoc (assoc node "mac" mac) "stats" stats))) [] stats))
-
+  (reduce #(conj %1 (let [stats (second %2)
+                          mac (stats "id_hex")
+                          node (if (nil? (nodes-map mac)) {} (nodes-map mac))]
+                      (assoc (assoc node "mac" mac) "stats" stats))) 
+          [] stats))
 
 (.send goog.net.XhrIo "http://localhost:3000/nodes.json" 
   (fn [result] 
     (let [nodes (js->clj (.getResponseJson (.-target result)))]
       (set! *raw-nodes* nodes)
-      ;(log "\n HURZ: " *raw-nodes* "\n")
       (.send goog.net.XhrIo "http://localhost:3000/stats.json"
         #(let [stats (js->clj (.getResponseJson (.-target %)))]
            ;(log "nodes: " nodes "\n\n\nstats: " stats)
