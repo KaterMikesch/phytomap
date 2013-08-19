@@ -2,7 +2,7 @@
   (:require [goog.net.XhrIo :as gxhrio]))
 
 (def *raw-nodes* nil)
-
+(def *stats* nil)
 (def *nodes-by-mac* nil)
 
 
@@ -10,7 +10,7 @@
   (.log js/console (apply str more)))
 
 (defn make-node-map-entry [map key value]
-  (log "appending value for key " key " to map of size " (count map))  
+  ;(log "appending value for key " key " to map of size " (count map))  
   (assoc map key value)
   )
 
@@ -18,6 +18,15 @@
   (log (count raw-nodes-list))
   (reduce #(make-node-map-entry %1 ((%2 "node") "mac") %2) {} *raw-nodes*)
   )
+
+(defn enriched-stats [stats, nodes-map]
+  ""
+  (reduce #(conj %1 
+                 (let [stats (second %2)
+                       mac (stats "id_hex")
+                       node (if (nil? (nodes-map mac)) {} (nodes-map mac))]
+                   (log "processing " mac " -> " (assoc (assoc node "mac" mac) "stats" stats) "\n")
+                   (assoc (assoc node "mac" mac) "stats" stats))) [] stats))
 
 
 (.send goog.net.XhrIo "http://localhost:3000/nodes.json" 
@@ -30,6 +39,9 @@
            ;(log "nodes: " nodes "\n\n\nstats: " stats)
            ;(log "\n\nfirst node: " (first nodes))
            (set! *nodes-by-mac* (make-nodes-map *raw-nodes*))
+           (set! *stats* (enriched-stats stats *nodes-by-mac*))
+           
+
            )))))
 
 
