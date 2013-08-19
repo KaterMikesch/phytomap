@@ -8,6 +8,7 @@
 /target
 pom.xml
 pom.xml.asc
+phytomap.js
 *.jar
 *.class
 .lein-deps-sum
