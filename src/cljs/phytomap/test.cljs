@@ -19,13 +19,20 @@
   (reduce #(make-node-map-entry %1 ((%2 "node") "mac") %2) {} *raw-nodes*)
   )
 
+(defn node-ping-stats [node]
+  (let [rtt-5-min (get-in node ["stats" "rtt_5_min"] 100000.0)]
+    (log "\n" rtt-5-min)
+    (if (nil? rtt-5-min)
+      100000.0
+      rtt-5-min)))  
+
 (defn enriched-stats [stats, nodes-map]
   ""
   (reduce #(conj %1 
                  (let [stats (second %2)
                        mac (stats "id_hex")
                        node (if (nil? (nodes-map mac)) {} (nodes-map mac))]
-                   (log "processing " mac " -> " (assoc (assoc node "mac" mac) "stats" stats) "\n")
+                   ;(log "processing " mac " -> " (assoc (assoc node "mac" mac) "stats" stats) "\n")
                    (assoc (assoc node "mac" mac) "stats" stats))) [] stats))
 
 
@@ -40,9 +47,8 @@
            ;(log "\n\nfirst node: " (first nodes))
            (set! *nodes-by-mac* (make-nodes-map *raw-nodes*))
            (set! *stats* (enriched-stats stats *nodes-by-mac*))
-           
-
-           )))))
+           (let [stats-sorted-by-ping (sort-by node-ping-stats < *stats*)]
+             (log "stats sorted by ping: " (map node-ping-stats stats-sorted-by-ping))))))))
 
 
 ;(log "toll " 34 " Dirky" (format "%s" "bla"))
