@@ -21683,28 +21683,6 @@ cljs.core.special_symbol_QMARK_ = function special_symbol_QMARK_(x) {
   new cljs.core.Symbol(null, ".", ".", -1640531481, null), new cljs.core.Symbol(null, "ns", "ns", -1640528002, null), new cljs.core.Symbol(null, "do", "do", -1640528316, null), new cljs.core.Symbol(null, "fn*", "fn*", -1640430053, null), new cljs.core.Symbol(null, "throw", "throw", -1530191713, null), new cljs.core.Symbol(null, "letfn*", "letfn*", 1548249632, null), new cljs.core.Symbol(null, "js*", "js*", -1640426054, null), new cljs.core.Symbol(null, "defrecord*", "defrecord*", 774272013, null), 
   new cljs.core.Symbol(null, "let*", "let*", -1637213400, null), new cljs.core.Symbol(null, "loop*", "loop*", -1537374273, null), new cljs.core.Symbol(null, "if", "if", -1640528170, null), new cljs.core.Symbol(null, "def", "def", -1640432194, null)]), x)
 };
-goog.provide("phytomap.test");
-goog.require("cljs.core");
-phytomap.test.log = function() {
-  var log__delegate = function(more) {
-    return console.log(cljs.core.apply.call(null, cljs.core.str, more))
-  };
-  var log = function(var_args) {
-    var more = null;
-    if(arguments.length > 0) {
-      more = cljs.core.array_seq(Array.prototype.slice.call(arguments, 0), 0)
-    }
-    return log__delegate.call(this, more)
-  };
-  log.cljs$lang$maxFixedArity = 0;
-  log.cljs$lang$applyTo = function(arglist__6312) {
-    var more = cljs.core.seq(arglist__6312);
-    return log__delegate(more)
-  };
-  log.cljs$core$IFn$_invoke$arity$variadic = log__delegate;
-  return log
-}();
-phytomap.test.log.call(null, "toll ", 34, " Dirky", cljs.core.format.call(null, "%s", "bla"));
 goog.provide("goog.disposable.IDisposable");
 goog.disposable.IDisposable = function() {
 };
@@ -25094,6 +25072,40 @@ goog.net.XhrIo.prototype.formatMsg_ = function(msg) {
 };
 goog.debug.entryPointRegistry.register(function(transformer) {
   goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_ = transformer(goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_)
+});
+goog.provide("phytomap.test");
+goog.require("cljs.core");
+goog.require("goog.net.XhrIo");
+phytomap.test.log = function() {
+  var log__delegate = function(more) {
+    return console.log(cljs.core.apply.call(null, cljs.core.str, more))
+  };
+  var log = function(var_args) {
+    var more = null;
+    if(arguments.length > 0) {
+      more = cljs.core.array_seq(Array.prototype.slice.call(arguments, 0), 0)
+    }
+    return log__delegate.call(this, more)
+  };
+  log.cljs$lang$maxFixedArity = 0;
+  log.cljs$lang$applyTo = function(arglist__8892) {
+    var more = cljs.core.seq(arglist__8892);
+    return log__delegate(more)
+  };
+  log.cljs$core$IFn$_invoke$arity$variadic = log__delegate;
+  return log
+}();
+phytomap.test.nodes_callback = function nodes_callback(reply) {
+  var nodes = cljs.core.js__GT_clj.call(null, reply.target.getResponseJson());
+  return phytomap.test.log.call(null, nodes)
+};
+goog.net.XhrIo.send("http://localhost:3000/nodes.json", function(result) {
+  var nodes = cljs.core.js__GT_clj.call(null, result.target.getResponseJson());
+  return goog.net.XhrIo.send("http://localhost:3000/stats.json", function(p1__8893_SHARP_) {
+    var stats = cljs.core.js__GT_clj.call(null, p1__8893_SHARP_.target.getResponseJson());
+    phytomap.test.log.call(null, "nodes: ", nodes, "\n\n\nstats: ", stats);
+    return phytomap.test.log.call(null, "\n\nfirst node: ", cljs.core.first.call(null, nodes))
+  })
 });
 goog.provide("goog.net.xpc");
 goog.provide("goog.net.xpc.CfgFields");
