@@ -1,5 +1,6 @@
 (ns phytomap.test
-  (:require [goog.net.XhrIo :as gxhrio]))
+  (:require [goog.net.XhrIo :as gxhrio]
+            [goog.dom :as dom]))
 
 (defn log [& more]
   (.log js/console (apply str more)))
@@ -10,6 +11,11 @@
   (defn rot13 
     "Given an input string, produce the rot 13 version of the string. \"hello\" -> \"uryyb\""
     [s] (apply str (map #(get rot13-map % %) s))))
+
+(defn open-uri [uri]
+  (let [window (dom/getWindow)
+        location (.-location window)]
+    (aset location "href" uri)))
 
 (def *raw-nodes* nil)
 (def *stats* nil)
