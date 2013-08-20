@@ -28,6 +28,18 @@ data as well as data from nodes info data."
                       (assoc (assoc node "mac" mac) "stats" stats))) 
           [] stats))
 
+;; Angular.js stuff (inspired partly by:
+;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
+
+(defn CStatsCtrl [$scope]
+  (def $scope.stats (array (js-obj "text" "learn angular" "done" true))))
+    
+(def StatsCtrl
+  (array
+    "$scope"
+    CStatsCtrl))
+
+;; Test stuff
 (.send goog.net.XhrIo "http://localhost:3000/nodes.json" 
   (fn [result] 
     (let [nodes (js->clj (.getResponseJson (.-target result)))]

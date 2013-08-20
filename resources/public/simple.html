@@ -6,14 +6,17 @@
     <!--[if lt IE 9]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+    
 </head>
 <body>
+
     <!-- pointing to cljsbuild generated js file -->
     <script src="js/phytomap.js"></script>
 
     <h2>Node Stats</h2>
-    <div ng-controller="StatsCtrl">
+    <div ng-controller="phytomap.test.StatsCtrl">
       <span>{{stats.length}} Nodes</span>
       <ul class="unstyled">
         <li ng-repeat="stat in stats">
