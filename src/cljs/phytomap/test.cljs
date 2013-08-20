@@ -9,15 +9,19 @@
 (def *nodes-by-mac* nil)
 
 (defn make-nodes-map [raw-nodes-list]
+  "Takes raw-nodes-list and makes entries accessible by the MAC address for 
+constant time access."
   (reduce #(assoc %1 (get-in %2 ["node" "mac"]) %2) {} raw-nodes-list))
 
 (defn node-ping-stats [node]
+  "Returns the ping stats of a node. If not given or nil/invalid, returns 100000"
   (if-let [rtt-5-min (get-in node ["stats" "rtt_5_min"])]
     rtt-5-min
-    100000.0))
+    100000))
 
 (defn enriched-stats [stats, nodes-map]
-  ""
+  "Returns vector with statistics entries which contain the data from statistics 
+data as well as data from nodes info data."
   (reduce #(conj %1 (let [stats (second %2)
                           mac (stats "id_hex")
                           node (if (nil? (nodes-map mac)) {} (nodes-map mac))]
@@ -36,6 +40,3 @@
            (set! *stats* (enriched-stats stats *nodes-by-mac*))
            (let [stats-sorted-by-ping (sort-by node-ping-stats < *stats*)]
              (log "stats sorted by ping: " (map node-ping-stats stats-sorted-by-ping))))))))
-
-
-;(log "toll " 34 " Dirky" (format "%s" "bla"))
