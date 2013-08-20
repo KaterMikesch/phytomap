@@ -28,15 +28,18 @@ data as well as data from nodes info data."
                       (assoc (assoc node "mac" mac) "stats" stats))) 
           [] stats))
 
-;; Angular.js stuff (inspired partly by:
+;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
 
 (defn CStatsCtrl [$scope]
-  (def $scope.stats (array (js-obj "text" "learn angular" "done" true))))
-    
+  (def $scope.stats (array (js-obj "text" "learn angular" "done" true)))
+  
+  (defn set-stats! [js-array-stats]
+    (.$apply $scope #(aset $scope "stats" js-array-stats))))
+
 (def StatsCtrl
   (array
-    "$scope"
+   "$scope"
     CStatsCtrl))
 
 ;; Test stuff
@@ -51,4 +54,5 @@ data as well as data from nodes info data."
            (set! *nodes-by-mac* (make-nodes-map *raw-nodes*))
            (set! *stats* (enriched-stats stats *nodes-by-mac*))
            (let [stats-sorted-by-ping (sort-by node-ping-stats < *stats*)]
-             (log "stats sorted by ping: " (map node-ping-stats stats-sorted-by-ping))))))))
+             (log "stats sorted by ping: " (map node-ping-stats stats-sorted-by-ping))
+             (set-stats! (array))))))))
