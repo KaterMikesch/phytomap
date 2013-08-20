@@ -8,7 +8,17 @@
     <![endif]-->
     
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
-    
+    <script>
+    function trans(msg, rot) {
+		return msg.replace(/([a-z])/ig,
+			function($1) {
+				var c = $1.charCodeAt(0);
+				return String.fromCharCode(
+					c >= 97 ? (c + rot + 26 - 97) % 26 + 97
+						: (c + rot + 26 - 65) % 26 + 65);
+			});
+ 		}
+    </script>
 </head>
 <body>
 
@@ -23,7 +33,7 @@
           <td>{{stat.mac}}</td>
           <td>{{stat.node_registration.operator_name}}</td>
           <td>{{stat.node_registration.name}}</td>
-          <td><a href="mailto:{{stat.node_registration.operator_email}}">{{stat.node_registration.operator_name}}</a></td>          
+          <td><a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">{{stat.node_registration.operator_name}}</a></td>          
         </tr>
       </table>
     </div>

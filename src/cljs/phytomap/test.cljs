@@ -4,14 +4,7 @@
 
 (defn log [& more]
   (.log js/console (apply str more)))
-
-(let [alpha (into #{} (concat (map char (range (int \a) (inc (int \z))))
-                              (map char (range (int \A) (inc (int \Z))))))
-      rot13-map (zipmap alpha (take 52 (drop 26 (cycle alpha))))]
-  (defn rot13 
-    "Given an input string, produce the rot 13 version of the string. \"hello\" -> \"uryyb\""
-    [s] (apply str (map #(get rot13-map % %) s))))
-
+  
 (defn open-uri [uri]
   (let [window (dom/getWindow)
         location (.-location window)]
@@ -41,12 +34,17 @@ data as well as data from nodes info data."
                       (assoc (assoc node "mac" mac) "stats" stats))) 
           [] stats))
 
+(defn send-email [realname email]
+  (open-uri (str "mailto:" realname "<" (js/trans email -23) ">")))
+
 ;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
 
 (defn CStatsCtrl [$scope]
   (def $scope.stats (array (js-obj "text" "learn angular" "done" true)))
   
+  (def $scope.sendEmail send-email)
+
   (defn set-stats! [js-array-stats]
     (.$apply $scope #(aset $scope "stats" js-array-stats))))
 
