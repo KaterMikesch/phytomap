@@ -35,8 +35,8 @@ data as well as data from nodes info data."
                       (assoc (assoc node "mac" mac) "stats" stats))) 
           [] stats))
 
-(defn send-email [realname email]
-  (open-uri (str "mailto:" (s/replace realname "," "") "<" (js/trans email -23) ">")))
+(defn send-rot23-email [realname rot23-email]
+  (open-uri (str "mailto:" (s/replace realname "," "") "<" (js/trans rot23-email -23) ">")))
 
 ;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
@@ -44,7 +44,7 @@ data as well as data from nodes info data."
 (defn CStatsCtrl [$scope]
   (def $scope.stats (array (js-obj "text" "learn angular" "done" true)))
   
-  (def $scope.sendEmail send-email)
+  (def $scope.sendEmail send-rot23-email)
 
   (defn set-stats! [js-array-stats]
     (.$apply $scope #(aset $scope "stats" js-array-stats))))
