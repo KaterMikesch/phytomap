@@ -18,12 +18,14 @@
     <h2>Node Stats</h2>
     <div ng-controller="phytomap.test.StatsCtrl">
       <span>{{stats.length}} Nodes</span>
-      <ul class="unstyled">
-        <li ng-repeat="stat in stats">
-          <input type="checkbox" ng-model="stat.done">
-          <span class="done-{{stat.done}}">{{stat.text}}</span>
-        </li>
-      </ul>
+      <table class="unstyled">
+        <tr ng-repeat="stat in stats">
+          <td>{{stat.mac}}</td>
+          <td>{{stat.node_registration.operator_name}}</td>
+          <td>{{stat.node_registration.name}}</td>
+          <td><a href="mailto:{{stat.node_registration.operator_email}}">{{stat.node_registration.operator_name}}</a></td>          
+        </tr>
+      </table>
     </div>
 
 </body>

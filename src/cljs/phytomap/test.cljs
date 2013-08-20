@@ -4,6 +4,13 @@
 (defn log [& more]
   (.log js/console (apply str more)))
 
+(let [alpha (into #{} (concat (map char (range (int \a) (inc (int \z))))
+                              (map char (range (int \A) (inc (int \Z))))))
+      rot13-map (zipmap alpha (take 52 (drop 26 (cycle alpha))))]
+  (defn rot13 
+    "Given an input string, produce the rot 13 version of the string. \"hello\" -> \"uryyb\""
+    [s] (apply str (map #(get rot13-map % %) s))))
+
 (def *raw-nodes* nil)
 (def *stats* nil)
 (def *nodes-by-mac* nil)
@@ -42,7 +49,8 @@ data as well as data from nodes info data."
    "$scope"
     CStatsCtrl))
 
-;; Test stuff
+;; ----
+
 (.send goog.net.XhrIo "http://localhost:3000/nodes.json" 
   (fn [result] 
     (let [nodes (js->clj (.getResponseJson (.-target result)))]
@@ -54,5 +62,6 @@ data as well as data from nodes info data."
            (set! *nodes-by-mac* (make-nodes-map *raw-nodes*))
            (set! *stats* (enriched-stats stats *nodes-by-mac*))
            (let [stats-sorted-by-ping (sort-by node-ping-stats < *stats*)]
-             (log "stats sorted by ping: " (map node-ping-stats stats-sorted-by-ping))
-             (set-stats! (array))))))))
+             (log stats-sorted-by-ping)
+             (log "stats sorted by ping: " (map node-ping-stats stats-sorted-by-ping) "count: " (count stats-sorted-by-ping))
+             (set-stats! (clj->js stats-sorted-by-ping))))))))
