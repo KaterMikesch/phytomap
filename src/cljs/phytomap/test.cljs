@@ -1,5 +1,6 @@
 (ns phytomap.test
-  (:require [goog.net.XhrIo :as gxhrio]
+  (:require [clojure.string :as s]
+            [goog.net.XhrIo :as gxhrio]
             [goog.dom :as dom]))
 
 (defn log [& more]
@@ -35,7 +36,7 @@ data as well as data from nodes info data."
           [] stats))
 
 (defn send-email [realname email]
-  (open-uri (str "mailto:" realname "<" (js/trans email -23) ">")))
+  (open-uri (str "mailto:" (s/replace realname "," "") "<" (js/trans email -23) ">")))
 
 ;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
