@@ -38,6 +38,9 @@ data as well as data from nodes info data."
 (defn send-rot23-email [realname rot23-email]
   (open-uri (str "mailto:" (s/replace realname "," "") "<" (js/trans rot23-email -23) ">")))
 
+(defn open-ssh [hostname]
+  (open-uri (str "ssh://root@" hostname ".local")))
+            
 ;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
 
@@ -46,6 +49,8 @@ data as well as data from nodes info data."
   
   (def $scope.sendEmail send-rot23-email)
 
+  (def $scope.openSSH open-ssh)
+  
   (defn set-stats! [js-array-stats]
     (.$apply $scope #(aset $scope "stats" js-array-stats))))
 
