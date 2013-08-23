@@ -40,6 +40,13 @@ data as well as data from nodes info data."
 (defn open-ssh [hostname]
   (open-uri (str "ssh://root@" hostname ".local")))
             
+(defn setup-osm-map [nodes]
+  (let [map (js/L.map "map" (clj->js {"scrollWheelZoom" false}))
+        cm-url "http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png"
+        tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" true}))]
+    (js/map.setView (clj->js *current-location*) 13)
+    (js/tile-layer.addTo map)))    
+
 ;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
 
@@ -72,7 +79,8 @@ data as well as data from nodes info data."
                                      (node/distance-to e (first *current-location*) (second *current-location*)))
                                    < 
                                    (simple-stats enriched-stats))]
-                      (set-stats! (clj->js sorted-stats))))))
+                      (set-stats! (clj->js sorted-stats))
+                      (setup-osm-map sorted-stats)))))
               (log "Error: Could not load node stats."))))
         (log "Error: Could not load nodes info.")))))
 

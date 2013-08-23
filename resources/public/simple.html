@@ -10,7 +10,12 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
     <!-- script src="https://ajax.googleapis.com/ajax/libs/i18n/angular-locale_de-ge.js"></script -->
     
-     	     
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
+ 	<!--[if lte IE 8]>
+     	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" />
+ 	<![endif]-->
+    <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
+    
     <script>
     function trans(msg, rot) {
 		return msg.replace(/([a-z])/ig,
@@ -30,20 +35,30 @@
     <h2>Freifunk WLAN in der Nähe</h2>
     <div ng-controller="phytomap.test.SimpleStatsCtrl">
       <p>Derzeit sind {{stats.length}} WLAN-Knoten verfügbar.</p>
+      <div style="float: left; height: 800px; overflow: auto;">
       <table class="unstyled">
       	<tr>
       	    <th>Freifunk WLAN-Knoten</th>
       	    <th>Entfernung</th>
       	</tr>
         <tr ng-repeat="stat in stats">
-          <td><b>{{stat.node_registration.name}}</b><br/>
-          Adresse: {{stat.node_registration.name}}<br/>
-          ping: {{stat.stats.rtt_5_min | number:0}} ms</td>
+          <td style="max-width: 250px">
+          	<b>{{stat.node_registration.name}}</b><br/>
+          	ping: {{stat.stats.rtt_5_min | number:0}} ms
+          	<address>{{stat.node_registration.loc_str}}</address><br/>
+          </td>
           <td>{{stat.distance | number:3}} km <br/>
           	<a href="">auf Karte zeigen<a></td>
         </tr>
       </table>
-    </div>
-
+      </div>
+      
+      <div id="map" style="height: 800px;"></div>      
+      <!--                        
+            L.marker([50.71619,7.08634]).addTo(map)
+        </script>         
+        -->  
+     </div>    
+   </div>
 </body>
 </html>
