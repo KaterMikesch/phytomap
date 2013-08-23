@@ -12,10 +12,6 @@
         location (.-location window)]
     (aset location "href" uri)))
 
-(def *raw-nodes* nil)
-(def *stats* nil)
-(def *nodes-by-mac* nil)
-
 (defn make-nodes-map [raw-nodes-list]
   "Takes raw-nodes-list and makes entries accessible by the MAC address for 
 constant time access."
@@ -57,25 +53,28 @@ data as well as data from nodes info data."
   (defn set-stats! [js-array-stats]
     (.$apply $scope #(aset $scope "stats" js-array-stats)))
   
+  ; get nodes info
   (.send goog.net.XhrIo "http://localhost:3000/nodes.json" 
-  (fn [result]
-    (let [nodes (js->clj (.getResponseJson (.-target result)))]
-      (set! *raw-nodes* nodes)
-      (.send goog.net.XhrIo "http://localhost:3000/stats.json"
-        #(let [stats (js->clj (.getResponseJson (.-target %)))]
-           ; Geolocation
-           (.getCurrentPosition js/navigator.geolocation
-             (fn [position]
-               (set! *current-location* [(.-latitude js/position.coords)
-                                         (.-longitude js/position.coords)])
-               ;(log "nodes: " nodes "\n\n\nstats: " stats)
-               ;(log "\n\nfirst node: " (first nodes))
-               (set! *nodes-by-mac* (make-nodes-map *raw-nodes*))
-               (set! *stats* (enriched-stats stats *nodes-by-mac*))
-               (let [sorted-stats (sort-by (fn [e] (node/distance-to e (first *current-location*) (second *current-location*))) < (simple-stats *stats*))]
-                 ;(log sorted-stats)
-                 (set-stats! (clj->js sorted-stats)))))))))))
-
+    (fn [result]
+      (if-let [nodes (js->clj (.getResponseJson (.-target result)))]
+        ; get node stats
+        (.send goog.net.XhrIo "http://localhost:3000/stats.json"
+          (fn [result] 
+            (if-let [stats (js->clj (.getResponseJson (.-target result)))]
+              ; get geo-location (todo: take care of error cases i.e. refusal, not present)
+              (.getCurrentPosition js/navigator.geolocation
+                (fn [position]
+                  (set! *current-location* [(.-latitude js/position.coords)
+                                            (.-longitude js/position.coords)])
+                  (let [enriched-stats (enriched-stats stats (make-nodes-map nodes))]
+                    (let [sorted-stats 
+                          (sort-by (fn [e] 
+                                     (node/distance-to e (first *current-location*) (second *current-location*)))
+                                   < 
+                                   (simple-stats enriched-stats))]
+                      (set-stats! (clj->js sorted-stats))))))
+              (log "Error: Could not load node stats."))))
+        (log "Error: Could not load nodes info.")))))
 
 (def SimpleStatsCtrl
   (array
