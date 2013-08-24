@@ -44,9 +44,10 @@ data as well as data from nodes info data."
   (let [osm-map (js/L.map "map" (clj->js {"scrollWheelZoom" false}))
         cm-url "http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png"
         tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" true}))]
-    (.setView osm-map (clj->js *current-location*) 16)
+    (.setView osm-map (clj->js *current-location*) 15)
     (.addTo tile-layer osm-map)
-    (.addTo (L.marker (clj->js *current-location*)) osm-map)))    
+    (doseq [n nodes]
+      (.addTo (L.marker (clj->js (node/latlon n))) osm-map))))    
 
 ;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
