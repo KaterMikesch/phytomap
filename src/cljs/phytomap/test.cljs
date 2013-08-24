@@ -72,6 +72,9 @@ data as well as data from nodes info data."
 ;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
 
+(def node-list-url "/nodes.json")
+(def node-stats-url "/stats.json")
+
 (defn CSimpleStatsCtrl [$scope]
   (def $scope.stats (array))
   
@@ -85,11 +88,11 @@ data as well as data from nodes info data."
     (.$apply $scope #(aset $scope "stats" js-array-stats)))
   
   ; get nodes info
-  (.send goog.net.XhrIo "http://localhost:3000/nodes.json" 
+  (.send goog.net.XhrIo node-list-url
     (fn [result]
       (if-let [nodes (js->clj (.getResponseJson (.-target result)))]
         ; get node stats
-        (.send goog.net.XhrIo "http://localhost:3000/stats.json"
+        (.send goog.net.XhrIo node-stats-url
           (fn [result] 
             (if-let [stats (js->clj (.getResponseJson (.-target result)))]
               ; get geo-location (todo: take care of error cases i.e. refusal, not present)
