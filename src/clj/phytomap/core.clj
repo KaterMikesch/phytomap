@@ -1,7 +1,8 @@
 (ns phytomap.core  
   (:use compojure.core)
   (:require [compojure.handler :as handler]
-            [compojure.route :as route]))
+            [compojure.route :as route]
+            [ring.util.response :as response]))
 
 ;; defroutes macro defines a function that chains individual route
 ;; functions together. The request map is passed to each function in
@@ -10,9 +11,9 @@
   ; to serve document root address
   (GET "/" [] "<p>Hello from compojure</p>")
   
-  (GET "/nodes.json" [] (slurp "http://register.kbu.freifunk.net/nodes.json"))
+  (GET "/nodes.json" [] (response/header (response/response (slurp "http://register.kbu.freifunk.net/nodes.json")) "Expires" "Thu, 01 Dec 2010 16:00:00 GMT"))
   
-  (GET "/stats.json" [] (slurp "http://stat.kbu.freifunk.net/nodes.json"))
+  (GET "/stats.json" [] (response/header (response/response (slurp "http://stat.kbu.freifunk.net/nodes.json")) "Expires" "Thu, 01 Dec 2010 16:00:00 GMT"))
   
   ; to serve static pages saved in resources/public directory
   (route/resources "/")
