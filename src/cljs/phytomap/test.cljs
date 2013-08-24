@@ -15,7 +15,7 @@
 (defn make-nodes-map [raw-nodes-list]
   "Takes raw-nodes-list and makes entries accessible by the MAC address for 
 constant time access."
-  (reduce #(assoc %1 (get-in %2 ["node" "mac"]) %2) {} raw-nodes-list))
+  (reduce #(assoc %1 (node/mac %2) %2) {} raw-nodes-list))
 
 (defn enriched-stats [stats, nodes-map]
   "Returns vector with statistics entries which contain the data from statistics 
@@ -40,14 +40,34 @@ data as well as data from nodes info data."
 (defn open-ssh [hostname]
   (open-uri (str "ssh://root@" hostname ".local")))
             
+(def *markers* {})
+
+(defn show-node [node-mac]
+  (let [marker (get *markers* node-mac)]
+    (log "show-node " node-mac marker)
+    (.openPopup marker)))
+
 (defn setup-osm-map [nodes]
   (let [osm-map (js/L.map "map" (clj->js {"scrollWheelZoom" false}))
         cm-url "http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png"
         tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" true}))]
-    (.setView osm-map (clj->js *current-location*) 15)
+    (.setView osm-map (clj->js *current-location*) 11)
     (.addTo tile-layer osm-map)
+    (.openPopup (.bindPopup (.addTo (L.marker (clj->js *current-location*)) osm-map) "Standort"))
+    (set! *markers* {})
     (doseq [n nodes]
-      (.addTo (L.marker (clj->js (node/latlon n))) osm-map))))    
+      (let [marker (L.marker (clj->js (node/latlon n)))]
+        (.bindPopup marker (str "<b>" (node/name n) "</b><br/>" (node/address n)))
+        (set! *markers* (assoc *markers* (node/mac n) marker))
+        (.addTo marker osm-map)))))
+
+
+;var redMarker = L.AwesomeMarkers.icon({
+;icon: 'coffee', 
+;color: 'red'
+;})
+
+;L.marker([51.941196,4.512291], {icon: redMarker}).addTo(map);
 
 ;; Angular.js stuff inspired partly by:
 ;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
@@ -58,6 +78,8 @@ data as well as data from nodes info data."
   (def $scope.sendEmail send-rot23-email)
 
   (def $scope.openSSH open-ssh)
+  
+  (def $scope.showNode show-node)
   
   (defn set-stats! [js-array-stats]
     (.$apply $scope #(aset $scope "stats" js-array-stats)))

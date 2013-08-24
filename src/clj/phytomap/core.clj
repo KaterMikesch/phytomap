@@ -9,6 +9,11 @@
 (defroutes app-routes
   ; to serve document root address
   (GET "/" [] "<p>Hello from compojure</p>")
+  
+  (GET "/nodes.json" [] (slurp "http://register.kbu.freifunk.net/nodes.json"))
+  
+  (GET "/stats.json" [] (slurp "http://stat.kbu.freifunk.net/nodes.json"))
+  
   ; to serve static pages saved in resources/public directory
   (route/resources "/")
   ; if page is not found

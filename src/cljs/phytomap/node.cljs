@@ -31,6 +31,15 @@
   "true if node has a ping that is not a dead-ping (100000). false otherwise."
   (< (ping-stats node) dead-ping))
 
+(defn mac [node]
+  (get-in node ["node" "mac"]))
+
+(defn name [node]
+  (get-in node ["node_registration" "name"]))
+
+(defn address [node]
+  (get-in node ["node_registration" "loc_str"]))
+
 (defn latlon [node]
   "Returns the node's latitude and longitude (as a vector) if present. nil otherwise."
   (if-let [lat (get-in node ["node_registration" "latitude"])]

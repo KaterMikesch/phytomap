@@ -27,6 +27,9 @@
 			});
  		}
     </script>
+    
+    <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
+    <script src="js/leaflet.awesome-markers.min.js"></script>
 </head>
 <body>
     <!-- pointing to cljsbuild generated js file -->
@@ -48,7 +51,7 @@
           	<address>{{stat.node_registration.loc_str}}</address><br/>
           </td>
           <td>{{stat.distance | number:3}} km <br/>
-          	<a href="">auf Karte zeigen<a></td>
+          	<a href="" ng-click="showNode(stat.node.mac)">auf Karte zeigen<a></td>
         </tr>
       </table>
       </div>
