@@ -56,7 +56,8 @@ data as well as data from nodes info data."
     (.openPopup (.bindPopup (.addTo (L.marker (clj->js *current-location*)) osm-map) "Standort"))
     (set! *markers* {})
     (doseq [n nodes]
-      (let [marker (L.marker (clj->js (node/latlon n)))]
+      (let [marker-icon (L.AwesomeMarkers.icon (clj->js {"icon" "coffee" "color" "red"}))
+            marker (L.marker (clj->js (node/latlon n)) (comment (clj->js {"icon" marker-icon})))]
         (.bindPopup marker (str "<b>" (node/name n) "</b><br/>" (node/address n)))
         (set! *markers* (assoc *markers* (node/mac n) marker))
         (.addTo marker osm-map)))))
