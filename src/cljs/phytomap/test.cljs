@@ -76,6 +76,14 @@ data as well as data from nodes info data."
 (def node-list-url "/nodes.json")
 (def node-stats-url "/stats.json")
 
+(def *extended-mode* false)
+
+(defn is-extended-mode? []
+  *extended-mode*)
+
+(defn set-extended-mode! [b]
+  (set! *extended-mode* b))
+
 (defn CSimpleStatsCtrl [$scope]
   (def $scope.stats (array))
   
@@ -85,9 +93,11 @@ data as well as data from nodes info data."
   
   (def $scope.showNode show-node)
   
+  (def $scope.extended is-extended-mode?)
+  
   (defn set-stats! [js-array-stats]
     (.$apply $scope #(aset $scope "stats" js-array-stats)))
-  
+    
   ; get nodes info
   (.send goog.net.XhrIo node-list-url
     (fn [result]
