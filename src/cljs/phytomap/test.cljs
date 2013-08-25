@@ -51,7 +51,7 @@ data as well as data from nodes info data."
   (let [osm-map (js/L.map "map" (clj->js {"scrollWheelZoom" false}))
         cm-url "http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png"
         tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" true}))]
-    (.setView osm-map (clj->js *current-location*) 11)
+    (.setView osm-map (clj->js *current-location*) 14)
     (.addTo tile-layer osm-map)
     (.openPopup (.bindPopup (.addTo (L.marker (clj->js *current-location*)) osm-map) "Standort"))
     (set! *markers* {})
