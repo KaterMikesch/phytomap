@@ -36,8 +36,9 @@
     <script src="js/phytomap.js"></script>
 
     <div ng-controller="phytomap.test.SimpleStatsCtrl">
-	  <h2 ng-if="simple">Freifunk WLAN in der Nähe (kbu)</h2>
-	  <h2 ng-if="extended">Informationen über die Freifunk WLAN-Knoten (kbu)</h2>
+	  <h2>Informationen über die Freifunk WLAN-Knoten (kbu)</h2>
+
+      <input type="checkbox" ng-model="extended"> mehr technische Informationen
 
       <p>Derzeit sind {{stats.length}} WLAN-Knoten mit Ortsangabe und funktionierender Internetverbindung verfügbar.</p>
       <div style="float: left; height: 700px; overflow: auto;">
@@ -47,12 +48,13 @@
       	    <th>Entfernung</th>
       	</tr>
         <tr ng-repeat="stat in stats">
-          <td style="max-width: 250px">
+          <td style="max-width: 350px">
           	<b>{{stat.node_registration.name}}</b><br/>
           	<address>{{stat.node_registration.loc_str}}</address>
           	ping: {{stat.stats.rtt_5_min | number:0}} ms
           	<span ng-if="extended">
-          		<br/>Extended
+          		<br/>MAC: {{stat.mac}} (<a href="" ng-click="openSSH(stat.node_registration.name)">ssh</a>)<br/>
+          		Operator: {{stat.node_registration.operator_name}} (<a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">E-Mail</a>)<br/>
           	</span>
           </td>
           <td>{{stat.distance | number:3}} km <br/>
