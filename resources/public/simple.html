@@ -35,9 +35,11 @@
     <!-- pointing to cljsbuild generated js file -->
     <script src="js/phytomap.js"></script>
 
-    <h2>Freifunk WLAN in der Nähe</h2>
     <div ng-controller="phytomap.test.SimpleStatsCtrl">
-      <p>Derzeit sind {{stats.length}} WLAN-Knoten verfügbar.</p>
+	  <h2 ng-if="simple">Freifunk WLAN in der Nähe (kbu)</h2>
+	  <h2 ng-if="extended">Informationen über die Freifunk WLAN-Knoten (kbu)</h2>
+
+      <p>Derzeit sind {{stats.length}} WLAN-Knoten mit Ortsangabe und funktionierender Internetverbindung verfügbar.</p>
       <div style="float: left; height: 700px; overflow: auto;">
       <table class="unstyled">
       	<tr>

@@ -76,14 +76,6 @@ data as well as data from nodes info data."
 (def node-list-url "/nodes.json")
 (def node-stats-url "/stats.json")
 
-(def *extended-mode* false)
-
-(defn is-extended-mode? []
-  *extended-mode*)
-
-(defn set-extended-mode! [b]
-  (set! *extended-mode* b))
-
 (defn CSimpleStatsCtrl [$scope]
   (def $scope.stats (array))
   
@@ -93,7 +85,16 @@ data as well as data from nodes info data."
   
   (def $scope.showNode show-node)
   
-  (def $scope.extended is-extended-mode?)
+  (defn set-extended! [b]
+    (aset $scope "extended" b)
+    (aset $scope "simple" (not b)))
+  
+  (defn is-extended? []
+    (aget $scope "extended"))
+  
+  (set-extended! false)
+  
+  (def $scope.setExtended set-extended!)
   
   (defn set-stats! [js-array-stats]
     (.$apply $scope #(aset $scope "stats" js-array-stats)))
