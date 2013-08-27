@@ -2,13 +2,16 @@
 <html ng-app>
 <head>
     <meta charset="utf-8">
-    <title>Freifunk WLAN in der Nähe</title>
+    <title>Freifunk WLAN</title>
     <!--[if lt IE 9]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     
     <script src="js/angular.min.js"></script>
     <script src="js/angular-locale_de.js"></script>
+    
+    <link href="http://register.kbu.freifunk.net/assets/application-f0075c3e31dddb231801aab2d7b97b39.css" media="all" rel="stylesheet" type="text/css" />
+    
     
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
  	<!--[if lte IE 8]>
@@ -30,45 +33,107 @@
     
     <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
     <script src="js/leaflet.awesome-markers.min.js"></script>
+    
+   <style type="text/css">
+   .worker {
+   }
+   .worker th, .worker td{
+    border-bottom: 1px #e0e0e0 solid;
+   }
+   .worker tr:last-child th, .worker tr:last-child td{
+    border-bottom: none;
+   }
+  </style>
+    
 </head>
-<body>
+<body class="freifunk-yellow-bg">
     <!-- pointing to cljsbuild generated js file -->
     <script src="js/phytomap.js"></script>
 
-    <div ng-controller="phytomap.core.SimpleStatsCtrl">
-	  <h2>Informationen über die Freifunk WLAN-Knoten (kbu)</h2>
-
+	<div id="header">
+		<div id="head">
+			<h1>WLAN-Knoten Informationen</h1>
+		</div>
+		
+		<div id="logo" style="background-image: url(http://register.kbu.freifunk.net/assets/banner-357a05e6969b6b5fe34111876a6aed59.png)">
+			<img alt="Banner_logo" src="http://register.kbu.freifunk.net/assets/banner_logo-0ffdd63c226a64e4601f497e871c69f1.png" />
+		</div>
+		
+		<div id="main-nav">
+			<a href="http://register.kbu.freifunk.net/app">Start</a> |
+			<a href="http://register.kbu.freifunk.net/app/map">Karte</a> |
+			<a href="phytomap.html">Nodes</a> |
+			<a href="http://register.kbu.freifunk.net/fastds">Fastd-Keys</a> |
+			<a href="http://register.kbu.freifunk.net/watchdog_bites">Watchdog</a> |
+		</div>
+		
+	</div>
+	
+    <div ng-controller="phytomap.core.SimpleStatsCtrl" id="body">
       <p>
-      	{{stats.length}} WLAN-Knoten<br/> 
-      	<input type="checkbox" ng-model="extended" ng-change="modeChanged()"> alle registrierten Knoten (auch offline) und mehr Info zeigen 
+      	<input type="checkbox" ng-model="extended" ng-change="modeChanged()"> Alle Knoten (auch offline) und mehr Info zeigen 
       </p>
       <div style="float: left; height: 700px; overflow: auto;">
-      <table class="unstyled">
+      <table class="worker">
+      <thead>
       	<tr>
-      	    <th>Freifunk WLAN-Knoten</th>
+      	    <th>{{stats.length}} WLAN-Knoten</th>
       	    <th>Entfernung</th>
       	</tr>
+      </thead>
+      <tbody>
         <tr ng-repeat="stat in stats">
-          <td style="max-width: 350px">
-          	<b>{{stat.node_registration.name}}</b>
-	        <br/>
-          	<address>{{stat.node_registration.loc_str}}</address>
-          	<span ng-switch="stat.stats.rtt_5_min">
-          		<span ng-switch-when="null" style="color: red;">offline</span>
-          		<span ng-switch-default>ping: {{stat.stats.rtt_5_min | number:0}} ms</span>
+          <td style="max-width: 300px;" valign="top">
+          	<span class="node_reg_key">Name: </span>
+          	<span class="node_reg_value">
+            	<span ng-switch="stat.node_registration.name == '' || stat.node_registration.name == null">
+          			<span ng-switch-when="true" style="color: red;">Ohne Name</span>
+          			<span ng-switch-default>{{stat.node_registration.name}}</span>
+          		</span>
           	</span>
+	        <br/>
+          	<span ng-switch="stat.node_registration.loc_str == '' || stat.node_registration.loc_str == null">
+          		<span ng-switch-when="true"></span>
+          		<span ng-switch-default>
+          			<span class="node_reg_key">Adresse: </span>
+          			<span class="node_reg_value">{{stat.node_registration.loc_str}}</span><br/>
+          		</span>
+          	</span>
+          	  
+          	</span>
+          	<span class="node_reg_key">Ping: </span>
+          	<span class="node_reg_value">
+          		<span ng-switch="stat.stats.rtt_5_min">
+          			<span ng-switch-when="null" style="color: red;">offline</span>
+          			<span ng-switch-default>{{stat.stats.rtt_5_min | number:0}} ms</span>
+          		</span>
+          	</span>
+          	
           	<span ng-if="extended">
-          		<br/>MAC: {{stat.mac}} (<a href="" ng-click="openSSH(stat.node_registration.name)">ssh</a>)<br/>
-          		Operator: {{stat.node_registration.operator_name}} (<a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">E-Mail</a>)<br/>
+          		<br/>
+          		<span class="node_reg_key">MAC: </span>
+          		<span class="node_reg_value monospaced">{{stat.mac}}</span>
+          		<span class="node_reg_value">
+          			(<a href="" ng-click="openSSH(stat.node_registration.name)">ssh</a>)
+          		</span>
+          		<br/>
+          		<span class="node_reg_key">Operator: </span>
+          		<span class="node_reg_value">
+          			<span ng-switch="stat.node_registration.operator_name == '' || stat.node_registration.operator_name == null">
+          				<span ng-switch-when="true" style="color: red;">Kein Operator</span>
+          				<span ng-switch-default>{{stat.node_registration.operator_name}} (<a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">E-Mail</a>)</span>
+          			</span>
+          		</span>
           	</span>
           </td>
-          <td>
+          <td valign="top">
           	<span ng-if="stat.distance">
           {{stat.distance | number:3}} km <br/>
           	<a href="" ng-click="showNode(stat.node.mac)">auf Karte zeigen<a>
           	</span>
           </td>
         </tr>
+      </tbody>
       </table>
       </div>
       
