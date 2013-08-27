@@ -141,7 +141,7 @@ data as well as data from nodes info data."
                                               (.-longitude js/position.coords)])
                     (aset $scope "enrichedStats" (enriched-stats stats (make-nodes-map nodes)))
                     (aset $scope "enrichedStatsCount" (count (aget $scope "enrichedStats")))
-                    (log (nth (aget $scope "enrichedStats") 45))
+                    ;(log (nth (aget $scope "enrichedStats") 45))
                     (mode-changed true))))
               (log "Error: Could not load node stats."))))
         (log "Error: Could not load nodes info.")))))
