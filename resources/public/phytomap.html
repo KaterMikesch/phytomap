@@ -38,9 +38,9 @@
     <div ng-controller="phytomap.core.SimpleStatsCtrl">
 	  <h2>Informationen über die Freifunk WLAN-Knoten (kbu)</h2>
 
-      <input type="checkbox" ng-model="extended" ng-change="modeChanged()"> mehr technische Informationen
+      <input type="checkbox" ng-model="extended" ng-change="modeChanged()"> alle registrierte Knoten (auch außer Betrieb) und mehr technische Informationen
 
-      <p>Derzeit sind {{stats.length}} WLAN-Knoten mit Ortsangabe und funktionierender Internetverbindung verfügbar.</p>
+      <p>{{stats.length}} WLAN-Knoten</p>
       <div style="float: left; height: 700px; overflow: auto;">
       <table class="unstyled">
       	<tr>

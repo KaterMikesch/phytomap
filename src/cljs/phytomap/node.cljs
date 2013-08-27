@@ -48,4 +48,5 @@
 
 (defn distance-to [node lat lon]
   (if-let [latlon (latlon node)]
-    (haversine-distance lat lon (first latlon) (second latlon))))
+    (haversine-distance lat lon (first latlon) (second latlon))
+    1000000))
