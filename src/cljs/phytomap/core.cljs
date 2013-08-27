@@ -46,7 +46,7 @@ data as well as data from nodes info data."
 
 (defn show-node [node-mac]
   (let [marker (get *markers* node-mac)]
-    (log "show-node " node-mac marker)
+    ;(log "show-node " node-mac marker)
     (.openPopup marker)))
 
 (defn update-osm-map 
@@ -141,7 +141,7 @@ data as well as data from nodes info data."
                                               (.-longitude js/position.coords)])
                     (aset $scope "enrichedStats" (enriched-stats stats (make-nodes-map nodes)))
                     (aset $scope "enrichedStatsCount" (count (aget $scope "enrichedStats")))
-                    ;(log (aget $scope "enrichedStats"))
+                    (log (nth (aget $scope "enrichedStats") 45))
                     (mode-changed true))))
               (log "Error: Could not load node stats."))))
         (log "Error: Could not load nodes info.")))))

@@ -64,19 +64,19 @@
 			<a href="http://register.kbu.freifunk.net/app/map">Karte</a> |
 			<a href="phytomap.html">Nodes</a> |
 			<a href="http://register.kbu.freifunk.net/fastds">Fastd-Keys</a> |
-			<a href="http://register.kbu.freifunk.net/watchdog_bites">Watchdog</a> |
+			<a href="http://register.kbu.freifunk.net/watchdog_bites">Watchdog</a>
 		</div>
 		
 	</div>
 	
     <div ng-controller="phytomap.core.SimpleStatsCtrl" id="body">
       <p ng-show="stats == null">
-      	Bitte einen Moment, Informationen werden geladen ... 
+      	Bitte einen Moment Geduld, Informationen werden geladen ... 
       </p>
 
       <p ng-show="stats != null">
       	<input type="checkbox" ng-model="allNodes" ng-change="modeChanged()"> 
-      	alle {{ enrichedStatsCount }} Knoten (auch offline und nicht registrierte) zeigen 
+      	alle {{ enrichedStatsCount }} Knoten (auch offline/nicht lokalisiert/nicht registriert) zeigen 
       	<br/>
       	<input type="checkbox" ng-model="extended"> 
       	erweiterte Informationen zeigen 
@@ -96,19 +96,23 @@
           	<span class="node_reg_key">Name: </span>
           	<span class="node_reg_value">
             	<span ng-switch="stat.node_registration.name == '' || stat.node_registration.name == null">
-          			<span ng-switch-when="true" style="color: red;">Ohne Name</span>
+          			<span ng-switch-when="true" style="color: red;">
+          				<span ng-if="stat.node_registration != null">Ohne Name</span>
+          				<span ng-if="stat.node_registration == null">Nicht registriert</span>          				
+          			</span>
           			<span ng-switch-default>{{stat.node_registration.name}}</span>
           		</span>
           	</span>
 	        <br/>
-          	<span ng-switch="stat.node_registration.loc_str == '' || stat.node_registration.loc_str == null">
-          		<span ng-switch-when="true"></span>
-          		<span ng-switch-default>
-          			<span class="node_reg_key">Adresse: </span>
-          			<span class="node_reg_value">{{stat.node_registration.loc_str}}</span><br/>
-          		</span>
+          	<span ng-if="stat.node_registration.loc_str != '' && stat.node_registration.loc_str != null">
+          		<span class="node_reg_key">Standort: </span>
+          		<span class="node_reg_value">{{stat.node_registration.loc_str}}</span><br/>
           	</span>
-          	  
+          	<span ng-if="(stat.node_registration.loc_str == '' || stat.node_registration.loc_str == null) && (stat.node_registration.osm_loc != '' && stat.node_registration.osm_loc != null)">
+          		<span class="node_reg_key">Standort: </span>
+          		<span class="node_reg_value">{{stat.node_registration.osm_loc}}</span><br/>
+          	</span>
+          	
           	</span>
           	<span class="node_reg_key">Ping: </span>
           	<span class="node_reg_value">
@@ -122,19 +126,30 @@
           		<br/>
           		<span class="node_reg_key">MAC: </span>
           		<span class="node_reg_value monospaced">{{stat.mac}}</span>
-          		<span class="node_reg_value">
+          		<span class="node_reg_value" ng-if="stat.node_registration != null">
           			(<a href="" ng-click="openSSH(stat.node_registration.name)">ssh</a>)
           		</span>
           		<br/>
           		<span class="node_reg_key">Firmware-Version: </span>
-          		<span class="node_reg_value">{{stat.node.fw_version}}</span>
-          		<br/>
-          		<span class="node_reg_key">Operator: </span>
           		<span class="node_reg_value">
+          				<span ng-if="stat.node.fw_version == null" style="color: red;">Unbekannt</span>
+          				<span ng-if="stat.node.fw_version != null">{{stat.node.fw_version}}</span>
+          		</span>
+          		<br/>
+          		<span class="node_reg_key" ng-if="stat.node_registration != null">Operator: </span>
+          		<span class="node_reg_value" ng-if="stat.node_registration != null">
           			<span ng-switch="stat.node_registration.operator_name == '' || stat.node_registration.operator_name == null">
           				<span ng-switch-when="true" style="color: red;">Kein Operator</span>
-          				<span ng-switch-default>{{stat.node_registration.operator_name}} (<a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">E-Mail</a>)</span>
+          				<span ng-switch-default>{{stat.node_registration.operator_name}} (<a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">E&#8209;Mail</a>)</span>
           			</span>
+          		</span>
+          		<span ng-if="stat.node_registration != null && stat.node != null">
+ 	         		<br/>
+          			<a href="http://register.kbu.freifunk.net/node_registrations/{{stat.node_registration.id}}/edit" target="regedit-{{stat.node_registration.id}}">Registrierung</a> 
+          			| 
+          			<a href="http://register.kbu.freifunk.net/node_statuses?node={{stat.node.id}}" target="stathist-{{stat.node.id}}">Status-Historie</a> 
+          			| 
+          			<a href="http://register.kbu.freifunk.net/nodes/{{stat.node.id}}/stats" target="stats-{{stat.node.id}}">Statistik</a>
           		</span>
           	</span>
           </td>
