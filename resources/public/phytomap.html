@@ -70,11 +70,20 @@
 	</div>
 	
     <div ng-controller="phytomap.core.SimpleStatsCtrl" id="body">
-      <p>
-      	<input type="checkbox" ng-model="extended" ng-change="modeChanged()"> Alle Knoten (auch offline) und mehr Info zeigen 
+      <p ng-show="stats == null">
+      	Bitte einen Moment, Informationen werden geladen ... 
       </p>
+
+      <p ng-show="stats != null">
+      	<input type="checkbox" ng-model="allNodes" ng-change="modeChanged()"> 
+      	alle {{ enrichedStatsCount }} Knoten (auch offline und nicht registrierte) zeigen 
+      	<br/>
+      	<input type="checkbox" ng-model="extended"> 
+      	erweiterte Informationen zeigen 
+      </p>
+      
       <div style="float: left; height: 700px; overflow: auto;">
-      <table class="worker">
+      <table class="worker" ng-show="stats != null">
       <thead>
       	<tr>
       	    <th>{{stats.length}} WLAN-Knoten</th>
@@ -83,7 +92,7 @@
       </thead>
       <tbody>
         <tr ng-repeat="stat in stats">
-          <td style="max-width: 300px;" valign="top">
+          <td style="max-width: 260px;" valign="top">
           	<span class="node_reg_key">Name: </span>
           	<span class="node_reg_value">
             	<span ng-switch="stat.node_registration.name == '' || stat.node_registration.name == null">
@@ -117,6 +126,9 @@
           			(<a href="" ng-click="openSSH(stat.node_registration.name)">ssh</a>)
           		</span>
           		<br/>
+          		<span class="node_reg_key">Firmware-Version: </span>
+          		<span class="node_reg_value">{{stat.node.fw_version}}</span>
+          		<br/>
           		<span class="node_reg_key">Operator: </span>
           		<span class="node_reg_value">
           			<span ng-switch="stat.node_registration.operator_name == '' || stat.node_registration.operator_name == null">
@@ -129,7 +141,7 @@
           <td valign="top">
           	<span ng-if="stat.distance">
           {{stat.distance | number:3}} km <br/>
-          	<a href="" ng-click="showNode(stat.node.mac)">auf Karte zeigen<a>
+          	<a href="" ng-click="showNode(stat.node.mac)">auf&nbsp;Karte&nbsp;zeigen<a>
           	</span>
           </td>
         </tr>

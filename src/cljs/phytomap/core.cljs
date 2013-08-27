@@ -30,7 +30,6 @@ data as well as data from nodes info data."
 
 (defn make-nodes-with-distance [nodes]
   (map (fn [e] 
-;         (log (node/latlon e)) 
          (if (node/latlon e) 
            (assoc e "distance" (node/distance-to e (first *current-location*) (second *current-location*))) 
            e))
@@ -42,7 +41,6 @@ data as well as data from nodes info data."
 (defn open-ssh [hostname]
   (open-uri (str "ssh://root@" hostname ".local")))
             
-(def *enriched-stats* nil)
 (def *map* nil)
 (def *markers* {})
 
@@ -56,7 +54,7 @@ data as well as data from nodes info data."
     (if (nil? *map*)
       (let [osm-map (js/L.map "map" (clj->js {"scrollWheelZoom" false}))
             cm-url "http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png"
-            tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" true}))]
+            tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" false}))]
         (.addTo tile-layer osm-map)
         (set! *map* osm-map)
         (.setView *map* (clj->js *current-location*) 14)))
@@ -89,7 +87,7 @@ data as well as data from nodes info data."
 (def node-stats-url "/stats.json")
 
 (defn CSimpleStatsCtrl [$scope]
-  (def $scope.stats (array))
+  (def $scope.stats nil)
   
   (def $scope.sendEmail send-rot23-email)
 
@@ -106,16 +104,16 @@ data as well as data from nodes info data."
         (.$apply $scope (aset $scope "stats" js-array-stats))
         (aset $scope "stats" js-array-stats))))
 
-  (defn is-extended-mode? []
-    (aget $scope "extended"))
+  (defn is-all-nodes-mode? []
+    (aget $scope "allNodes"))
   
   (defn mode-changed 
     ([] (mode-changed false))
     ([apply?]
       (let [nodes (make-nodes-with-distance 
-                    (if (is-extended-mode?) 
-                      *enriched-stats* 
-                      (filter #(and (node/working? %) (node/latlon %)) *enriched-stats*)))
+                    (if (is-all-nodes-mode?) 
+                      (aget $scope "enrichedStats") 
+                      (filter #(and (node/working? %) (node/latlon %)) (aget $scope "enrichedStats"))))
             sorted-nodes (sort-by (fn [e] 
                                     (node/distance-to e (first *current-location*) (second *current-location*)))
                                   < 
@@ -134,14 +132,16 @@ data as well as data from nodes info data."
           (fn [result] 
             (if-let [stats (js->clj (.getResponseJson (.-target result)))]
               (do
-                (log "stats loaded ... trying to get location ...")
+                ;(log "stats loaded ... trying to get location ...")
                 ; get geo-location (todo: take care of error cases i.e. refusal, not present)
                 (.getCurrentPosition js/navigator.geolocation
                   (fn [position]
-                    (log "... got location")
+                    ;(log "... got location")
                     (set! *current-location* [(.-latitude js/position.coords)
                                               (.-longitude js/position.coords)])
-                    (set! *enriched-stats* (enriched-stats stats (make-nodes-map nodes)))
+                    (aset $scope "enrichedStats" (enriched-stats stats (make-nodes-map nodes)))
+                    (aset $scope "enrichedStatsCount" (count (aget $scope "enrichedStats")))
+                    ;(log (aget $scope "enrichedStats"))
                     (mode-changed true))))
               (log "Error: Could not load node stats."))))
         (log "Error: Could not load nodes info.")))))
