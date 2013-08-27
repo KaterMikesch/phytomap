@@ -2,12 +2,20 @@
 <html ng-app>
 <head>
     <meta charset="utf-8">
-    <title>Freifunk Statistics</title>
+    <title>Freifunk WLAN in der Nähe</title>
     <!--[if lt IE 9]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/angular-locale_de.js"></script>
+    
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+ 	<!--[if lte IE 8]>
+     	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+ 	<![endif]-->
+    <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+    
     <script>
     function trans(msg, rot) {
 		return msg.replace(/([a-z])/ig,
@@ -19,28 +27,46 @@
 			});
  		}
     </script>
+    
+    <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
+    <script src="js/leaflet.awesome-markers.min.js"></script>
 </head>
 <body>
-
     <!-- pointing to cljsbuild generated js file -->
     <script src="js/phytomap.js"></script>
 
-    <h2>Statistiken</h2>
-    <div ng-controller="phytomap.test.StatsCtrl">
-      <p>{{stats.length}} Knoten</p>
+    <div ng-controller="phytomap.core.SimpleStatsCtrl">
+	  <h2>Informationen über die Freifunk WLAN-Knoten (kbu)</h2>
+
+      <input type="checkbox" ng-model="extended" ng-change="modeChanged()"> mehr technische Informationen
+
+      <p>Derzeit sind {{stats.length}} WLAN-Knoten mit Ortsangabe und funktionierender Internetverbindung verfügbar.</p>
+      <div style="float: left; height: 700px; overflow: auto;">
       <table class="unstyled">
       	<tr>
-      	    <th>Knoten</th>
-      		<th>Aufsteller</th>
-      		<th>Latenz</th>
+      	    <th>Freifunk WLAN-Knoten</th>
+      	    <th>Entfernung</th>
       	</tr>
         <tr ng-repeat="stat in stats">
-          <td><b><a href="" ng-click="openSSH(stat.node_registration.name)">{{stat.node_registration.name}}</a></b> (MAC {{stat.mac}})</td>
-          <td><a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">{{stat.node_registration.operator_name}}</a></td>          
-          <td>{{stat.stats.rtt_5_min}}</td>	
+          <td style="max-width: 350px">
+          	<b>{{stat.node_registration.name}}</b><br/>
+          	<address>{{stat.node_registration.loc_str}}</address>
+          	ping: {{stat.stats.rtt_5_min | number:0}} ms
+          	<span ng-if="extended">
+          		<br/>MAC: {{stat.mac}} (<a href="" ng-click="openSSH(stat.node_registration.name)">ssh</a>)<br/>
+          		Operator: {{stat.node_registration.operator_name}} (<a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">E-Mail</a>)<br/>
+          	</span>
+          </td>
+          <td>{{stat.distance | number:3}} km <br/>
+          	<a href="" ng-click="showNode(stat.node.mac)">auf Karte zeigen<a>
+          </td>
         </tr>
       </table>
-    </div>
-
+      </div>
+      
+      <div id="map" style="height: 700px;"></div>     
+       
+     </div>    
+   </div>
 </body>
 </html>

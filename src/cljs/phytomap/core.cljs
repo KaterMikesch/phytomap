@@ -1,4 +1,4 @@
-(ns phytomap.test
+(ns phytomap.core
   (:require [phytomap.node :as node]
             [clojure.string :as s]
             [goog.net.XhrIo :as gxhrio]
@@ -40,6 +40,7 @@ data as well as data from nodes info data."
 (defn open-ssh [hostname]
   (open-uri (str "ssh://root@" hostname ".local")))
             
+(def *map* nil)
 (def *markers* {})
 
 (defn show-node [node-mac]
@@ -47,21 +48,29 @@ data as well as data from nodes info data."
     (log "show-node " node-mac marker)
     (.openPopup marker)))
 
-(defn setup-osm-map [nodes]
-  (let [osm-map (js/L.map "map" (clj->js {"scrollWheelZoom" false}))
-        cm-url "http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png"
-        tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" true}))]
-    (.setView osm-map (clj->js *current-location*) 14)
-    (.addTo tile-layer osm-map)
-    (.openPopup (.bindPopup (.addTo (L.marker (clj->js *current-location*)) osm-map) "Standort"))
+(defn update-osm-map 
+  ([nodes]
+    (if (nil? *map*)
+      (let [osm-map (js/L.map "map" (clj->js {"scrollWheelZoom" false}))
+            cm-url "http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png"
+            tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" true}))]
+        (.addTo tile-layer osm-map)
+        (set! *map* osm-map)))
+    (update-osm-map nodes *map*))
+  ([nodes osm-map] 
+    (doseq [[k v] *markers*]
+      (.removeLayer osm-map v))
     (set! *markers* {})
+    (.setView osm-map (clj->js *current-location*) 14)
+    (let [location-marker (L.marker (clj->js *current-location*))]
+      (set! *markers* (assoc *markers* "location" location-marker))
+      (.openPopup (.bindPopup (.addTo location-marker osm-map) "Standort")))
     (doseq [n nodes]
       (let [marker-icon (L.AwesomeMarkers.icon (clj->js {"icon" "coffee" "color" "red"}))
             marker (L.marker (clj->js (node/latlon n)) (comment (clj->js {"icon" marker-icon})))]
-        (.bindPopup marker (str "<b>" (node/name n) "</b><br/>" (node/address n)))
+        (.bindPopup marker (str "<b>" (node/node-name n) "</b><br/>" (node/address n)))
         (set! *markers* (assoc *markers* (node/mac n) marker))
         (.addTo marker osm-map)))))
-
 
 ;var redMarker = L.AwesomeMarkers.icon({
 ;icon: 'coffee', 
@@ -119,7 +128,7 @@ data as well as data from nodes info data."
                                    < 
                                    (simple-stats enriched-stats))]
                       (set-stats! (clj->js sorted-stats))
-                      (setup-osm-map sorted-stats)))))
+                      (update-osm-map sorted-stats)))))
               (log "Error: Could not load node stats."))))
         (log "Error: Could not load nodes info.")))))
 

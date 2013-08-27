@@ -34,7 +34,7 @@
 (defn mac [node]
   (get-in node ["node" "mac"]))
 
-(defn name [node]
+(defn node-name [node]
   (get-in node ["node_registration" "name"]))
 
 (defn address [node]
