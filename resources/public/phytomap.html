@@ -79,7 +79,11 @@
       	alle {{ enrichedStatsCount }} Knoten zeigen (auch offline/nicht lokalisiert/nicht registriert) 
       	<br/>
       	<input type="checkbox" ng-model="extended"> 
-      	erweiterte Informationen zeigen 
+      	erweiterte Informationen zeigen
+      	<br/>
+      	<span>
+      		Suche: <input ng-model="searchText">
+      	</span> 
       </p>
       
       <div style="float: left; height: 700px; overflow: auto;">
@@ -91,7 +95,7 @@
       	</tr>
       </thead>
       <tbody>
-        <tr ng-repeat="stat in stats">
+        <tr ng-repeat="stat in stats | filter:searchText">
           <td style="max-width: 260px;" valign="top">
           	<span class="node_reg_key">Name: </span>
           	<span class="node_reg_value">
