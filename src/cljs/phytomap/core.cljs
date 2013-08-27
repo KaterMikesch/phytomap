@@ -97,7 +97,7 @@ data as well as data from nodes info data."
   
   (def $scope.showNode show-node)
   
-  (def $scope.extended true)
+  (def $scope.extended false)
   
   (defn set-stats! 
     ([js-array-stats] (set-stats! js-array-stats false))

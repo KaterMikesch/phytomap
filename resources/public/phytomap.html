@@ -38,9 +38,10 @@
     <div ng-controller="phytomap.core.SimpleStatsCtrl">
 	  <h2>Informationen über die Freifunk WLAN-Knoten (kbu)</h2>
 
-      <input type="checkbox" ng-model="extended" ng-change="modeChanged()"> alle registrierte Knoten (auch außer Betrieb) und mehr technische Informationen
-
-      <p>{{stats.length}} WLAN-Knoten</p>
+      <p>
+      	{{stats.length}} WLAN-Knoten<br/> 
+      	<input type="checkbox" ng-model="extended" ng-change="modeChanged()"> alle registrierten Knoten (auch offline) und mehr Info zeigen 
+      </p>
       <div style="float: left; height: 700px; overflow: auto;">
       <table class="unstyled">
       	<tr>
@@ -49,16 +50,23 @@
       	</tr>
         <tr ng-repeat="stat in stats">
           <td style="max-width: 350px">
-          	<b>{{stat.node_registration.name}}</b><br/>
+          	<b>{{stat.node_registration.name}}</b>
+	        <br/>
           	<address>{{stat.node_registration.loc_str}}</address>
-          	ping: {{stat.stats.rtt_5_min | number:0}} ms
+          	<span ng-switch="stat.stats.rtt_5_min">
+          		<span ng-switch-when="null" style="color: red;">offline</span>
+          		<span ng-switch-default>ping: {{stat.stats.rtt_5_min | number:0}} ms</span>
+          	</span>
           	<span ng-if="extended">
           		<br/>MAC: {{stat.mac}} (<a href="" ng-click="openSSH(stat.node_registration.name)">ssh</a>)<br/>
           		Operator: {{stat.node_registration.operator_name}} (<a href="" ng-click="sendEmail(stat.node_registration.operator_name, stat.node_registration.operator_email)">E-Mail</a>)<br/>
           	</span>
           </td>
-          <td>{{stat.distance | number:3}} km <br/>
+          <td>
+          	<span ng-if="stat.distance">
+          {{stat.distance | number:3}} km <br/>
           	<a href="" ng-click="showNode(stat.node.mac)">auf Karte zeigen<a>
+          	</span>
           </td>
         </tr>
       </table>
