@@ -90,7 +90,7 @@
       <table class="worker" ng-show="stats != null">
       <thead>
       	<tr>
-      	    <th>{{stats.length}} WLAN-Knoten</th>
+      	    <th>{{(stats | filter:searchText).length}} WLAN-Knoten</th>
       	    <th>Entfernung</th>
       	</tr>
       </thead>
