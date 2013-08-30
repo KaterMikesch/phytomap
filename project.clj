@@ -7,7 +7,10 @@
   ;; clojure source code pathname
   :source-paths ["src/clj"]
 
+  :repositories {"sonatype-oss-public" "https://oss.sonatype.org/content/groups/public/"}
+  
   :dependencies [[org.clojure/clojure "1.5.1"]
+                 [org.clojure/core.async "0.1.0-SNAPSHOT"]
                  [compojure "1.1.5"]]
 
   :plugins [;; cljsbuild plugin

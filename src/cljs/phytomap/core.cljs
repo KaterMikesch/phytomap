@@ -2,7 +2,10 @@
   (:require [phytomap.node :as node]
             [clojure.string :as s]
             [goog.net.XhrIo :as gxhrio]
-            [goog.dom :as dom]))
+            [goog.dom :as dom]
+            [cljs.core.async :as async :refer [chan close!]])
+  (:require-macros
+    [cljs.core.async.macros :refer [go alt!]]))
 
 (defn log [& more]
   (.log js/console (apply str more)))
@@ -11,6 +14,26 @@
   (let [window (dom/getWindow)
         location (.-location window)]
     (aset location "href" uri)))
+
+(defn GET-json [url]
+  "Channel based HTTP-GET. Returns the channel that eventually has the response's json as result."
+  (let [ch (chan 1)]
+    (gxhrio/send url
+                 (fn [event]
+                   (let [res (-> event .-target .getResponseJson)]
+                     (go (>! ch res)
+                         (close! ch)))))
+    ch))
+
+(defn get-current-location []
+  (let [ch (chan 1)]
+    (.getCurrentPosition js/navigator.geolocation
+      (fn [position]
+        (let [res [(.-latitude js/position.coords)
+                   (.-longitude js/position.coords)]]
+          (go (>! ch res)
+              (close! ch)))))
+    ch))
 
 (defn make-nodes-map [raw-nodes-list]
   "Takes raw-nodes-list and makes entries accessible by the MAC address for 
@@ -26,12 +49,10 @@ data as well as data from nodes info data."
                       (assoc (assoc node "mac" mac) "stats" stats))) 
           [] stats))
 
-(def *current-location* [50.9406645 6.9599115])
-
-(defn make-nodes-with-distance [nodes]
+(defn make-nodes-with-distance [nodes loc]
   (map (fn [e] 
          (if (node/latlon e) 
-           (assoc e "distance" (node/distance-to e (first *current-location*) (second *current-location*))) 
+           (assoc e "distance" (node/distance-to e (first loc) (second loc))) 
            e))
        nodes))
 
@@ -50,20 +71,20 @@ data as well as data from nodes info data."
     (.openPopup marker)))
 
 (defn update-osm-map 
-  ([nodes]
+  ([nodes loc]
     (if (nil? *map*)
       (let [osm-map (js/L.map "map" (clj->js {"scrollWheelZoom" false}))
             cm-url "http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png"
             tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" false}))]
         (.addTo tile-layer osm-map)
         (set! *map* osm-map)
-        (.setView *map* (clj->js *current-location*) 14)))
-    (update-osm-map nodes *map*))
-  ([nodes osm-map] 
+        (.setView *map* (clj->js loc) 14)))
+    (update-osm-map nodes loc *map*))
+  ([nodes loc osm-map] 
     (doseq [[k v] *markers*]
       (.removeLayer osm-map v))
     (set! *markers* {})
-    (let [location-marker (L.marker (clj->js *current-location*))]
+    (let [location-marker (L.marker (clj->js loc))]
       (set! *markers* (assoc *markers* "location" location-marker))
       (.openPopup (.bindPopup (.addTo location-marker osm-map) "Standort")))
     (doseq [n nodes]
@@ -97,6 +118,8 @@ data as well as data from nodes info data."
   
   (def $scope.extended false)
   
+  (def $scope.current-location [50.9406645 6.9599115])
+
   (defn set-stats! 
     ([js-array-stats] (set-stats! js-array-stats false))
     ([js-array-stats apply?]
@@ -110,41 +133,31 @@ data as well as data from nodes info data."
   (defn mode-changed 
     ([] (mode-changed false))
     ([apply?]
-      (let [nodes (make-nodes-with-distance 
+      (let [loc (aget $scope "current-location")
+            nodes (make-nodes-with-distance 
                     (if (is-all-nodes-mode?) 
                       (aget $scope "enrichedStats") 
-                      (filter #(and (node/working? %) (node/latlon %)) (aget $scope "enrichedStats"))))
+                      (filter #(and (node/working? %) (node/latlon %)) (aget $scope "enrichedStats"))) loc)
             sorted-nodes (sort-by (fn [e] 
-                                    (node/distance-to e (first *current-location*) (second *current-location*)))
+                                    (node/distance-to e (first loc) (second loc)))
                                   < 
                                   nodes)]
         (set-stats! (clj->js sorted-nodes) apply?)
-        (update-osm-map sorted-nodes))))
+        (update-osm-map sorted-nodes loc))))
   
   (def $scope.modeChanged mode-changed)
       
-  ; get nodes info
-  (.send goog.net.XhrIo node-list-url
-    (fn [result]
-      (if-let [nodes (js->clj (.getResponseJson (.-target result)))]
-        ; get node stats
-        (.send goog.net.XhrIo node-stats-url
-          (fn [result] 
-            (if-let [stats (js->clj (.getResponseJson (.-target result)))]
-              (do
-                ;(log "stats loaded ... trying to get location ...")
-                ; get geo-location (todo: take care of error cases i.e. refusal, not present)
-                (.getCurrentPosition js/navigator.geolocation
-                  (fn [position]
-                    ;(log "... got location")
-                    (set! *current-location* [(.-latitude js/position.coords)
-                                              (.-longitude js/position.coords)])
-                    (aset $scope "enrichedStats" (enriched-stats stats (make-nodes-map nodes)))
-                    (aset $scope "enrichedStatsCount" (count (aget $scope "enrichedStats")))
-                    ;(log (nth (aget $scope "enrichedStats") 45))
-                    (mode-changed true))))
-              (log "Error: Could not load node stats."))))
-        (log "Error: Could not load nodes info.")))))
+  (go
+    (let [ch-nodes (GET-json node-list-url)
+          ch-stats (GET-json node-stats-url)
+          ch-pos (get-current-location)
+          nodes (js->clj (<! ch-nodes))
+          stats (js->clj (<! ch-stats))
+          pos (<! ch-pos)]
+      (aset $scope "current-location" pos)
+      (aset $scope "enrichedStats" (enriched-stats stats (make-nodes-map nodes)))
+      (aset $scope "enrichedStatsCount" (count (aget $scope "enrichedStats")))
+      (mode-changed true))))
 
 (def SimpleStatsCtrl
   (array

@@ -12,6 +12,7 @@ The following audiences are being targed by phytomap:
 ## To Do
 * Make runnable on mobile/iOS devices (BUG: shows too few nodes when in simple mode)
 * Use core.async for concurrent network accesses and the geolocator
+* Make the height of table and the map so that they fill the bottom of the visible area only
 
 ## Usage
 
