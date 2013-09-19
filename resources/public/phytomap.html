@@ -77,6 +77,9 @@
       <p ng-show="stats != null">
       	<input type="checkbox" ng-model="allNodes" ng-change="modeChanged()"> 
       	alle {{ enrichedStatsCount }} Knoten zeigen (auch offline/nicht lokalisiert/nicht registriert) 
+ <!--     	<br/>
+      	<input type="checkbox" ng-model="list"> 
+      	Liste zeigen -->
       	<br/>
       	<input type="checkbox" ng-model="extended"> 
       	erweiterte Informationen zeigen
@@ -86,6 +89,7 @@
       	</span> 
       </p>
       
+      <!-- span ng-if="searchText.length || list" -->
       <div style="float: left; height: 700px; overflow: auto;">
       <table class="worker" ng-show="stats != null">
       <thead>
@@ -167,9 +171,9 @@
       </tbody>
       </table>
       </div>
+      <!-- /span -->
       
-      <div id="map" style="height: 700px;"></div>     
-       
+      <div id="map" style="height: 700px;" width="100%"></div>     
      </div>    
    </div>
 </body>

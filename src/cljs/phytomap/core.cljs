@@ -64,11 +64,25 @@ data as well as data from nodes info data."
             
 (def *map* nil)
 (def *markers* {})
+(def *location-circle-layer* nil)
 
 (defn show-node [node-mac]
-  (let [marker (get *markers* node-mac)]
+  (let [marker (get *markers* node-mac)
+        latlng (.getLatLng marker)]
+    (log latlng)
+    (.panTo *map* latlng)
     ;(log "show-node " node-mac marker)
     (.openPopup marker)))
+
+(defn zoom-for-node [n current-loc osm-map]
+  "Returns the zoom level that's necessary for displaying the given node, when the given current location is in the center of the map."
+  (let [node-latlon (node/latlon n)
+        lat-diff (- (first current-loc) (first node-latlon))
+        lon-diff (- (second current-loc) (second node-latlon))
+        north-west (js/L.LatLng. (- (first current-loc) lat-diff) (- (second current-loc) lon-diff))
+        south-east (js/L.LatLng. (+ (first current-loc) lat-diff) (+ (second current-loc) lon-diff))
+        bounds (js/L.LatLngBounds. north-west south-east)]
+    (.getBoundsZoom osm-map bounds)))
 
 (defn update-osm-map 
   ([nodes loc]
@@ -78,31 +92,25 @@ data as well as data from nodes info data."
             tile-layer (js/L.tileLayer cm-url (clj->js {"maxZoom" 18 "detectRetina" false}))]
         (.addTo tile-layer osm-map)
         (set! *map* osm-map)
-        (.setView *map* (clj->js loc) 14)))
+        (.setView *map* (clj->js loc) (zoom-for-node (first nodes) loc osm-map))))
     (update-osm-map nodes loc *map*))
   ([nodes loc osm-map] 
     (doseq [[k v] *markers*]
       (.removeLayer osm-map v))
+    (if *location-circle-layer* 
+      (.removeLayer osm-map *location-circle-layer*))
     (set! *markers* {})
-    (let [location-marker (L.marker (clj->js loc))]
-      (set! *markers* (assoc *markers* "location" location-marker))
-      (.openPopup (.bindPopup (.addTo location-marker osm-map) "Standort")))
     (doseq [n nodes]
       (if-let [latlon (node/latlon n)]
         (let [marker (L.marker (clj->js latlon))]
           (.bindPopup marker (str "<b>" (node/node-name n) "</b><br/>" (node/address n)))
           (set! *markers* (assoc *markers* (node/mac n) marker))
-          (.addTo marker osm-map))))))
-  
-;var redMarker = L.AwesomeMarkers.icon({
-;icon: 'coffee', 
-;color: 'red'
-;})
-
-;L.marker([51.941196,4.512291], {icon: redMarker}).addTo(map);
-
-;; Angular.js stuff inspired partly by:
-;; https://github.com/konrad-garus/hello-cljs-angular/blob/master/src-cljs/hello_clojurescript.cljs
+          (.addTo marker osm-map))))
+    (let [location-marker (L.marker (clj->js loc))
+          location-latlng (L.LatLng. (first loc) (second loc))
+          location-circle-layer (L.CircleMarker. location-latlng (clj->js {"color" "#ff0000"}))]
+      (.addLayer osm-map location-circle-layer)
+      (set! *location-circle-layer* location-circle-layer))))
 
 (def node-list-url "/nodes.json")
 (def node-stats-url "/stats.json")
